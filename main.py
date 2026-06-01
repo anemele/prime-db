@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 from typing import Any, Callable
 
-N = 100000000
+N = 100_000_000
 PACK_FMT = "I"  # I: unsigned int
 
 db_path = Path("db")
