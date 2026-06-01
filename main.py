@@ -9,7 +9,6 @@ PACK_FMT = "I"  # I: unsigned int
 db_path = Path("db")
 db_path.mkdir(exist_ok=True)
 fp_spf = db_path / "spf.bin"
-fp_prime = db_path / "prime.txt"
 fp_bitmap = db_path / "bitmap.bin"
 
 
@@ -35,10 +34,6 @@ def calc():
     def dump():
         with fp_spf.open("wb") as fp:
             array.array(PACK_FMT, spf_list).tofile(fp)
-
-        with fp_prime.open("w") as fp:
-            fp.write("2\n")
-            fp.write("\n".join(map(str, prime_list)))
 
         # 移位运算优先级低于加减
         bitmap = bytearray((N >> 3) + 1)
@@ -98,4 +93,4 @@ def check():
         is_prime = not not bit
         return is_prime
 
-    _ui("test if an integer is prime", check_n)
+    _ui("test prime", check_n)
