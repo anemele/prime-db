@@ -67,12 +67,11 @@ def _ui(prompt: str, f: Callable[[int], Any]):
 def expand():
     arr = array.array(PACK_FMT)
     arr.frombytes(fp_spf.read_bytes())
-    spf_lst = arr.tolist()
 
     def expand_spf(n: int) -> str:
         parts = []
         while n > 1:
-            p = spf_lst[n]
+            p = arr[n]
             cnt = 0
             while n % p == 0:
                 cnt += 1
