@@ -1,10 +1,14 @@
 import array
+import struct
 import time
 from pathlib import Path
 from typing import Any, Callable
 
 N = 100_000_000
 PACK_FMT = "I"  # I: unsigned int
+ITEM_SIZE = 4
+_ITEM_SIZE_BITS = 2
+assert ITEM_SIZE == struct.calcsize(PACK_FMT)
 
 db_path = Path("db")
 db_path.mkdir(exist_ok=True)
@@ -35,7 +39,6 @@ def calc():
         with fp_spf.open("wb") as fp:
             array.array(PACK_FMT, spf_list).tofile(fp)
 
-        # 移位运算优先级低于加减
         bitmap = bytearray((N >> 3) + 1)
         bitmap[0] |= 4  # 2
         for prime in prime_list:
@@ -65,13 +68,14 @@ def _ui(prompt: str, f: Callable[[int], Any]):
 
 
 def expand():
-    arr = array.array(PACK_FMT)
-    arr.frombytes(fp_spf.read_bytes())
+    fp = fp_spf.open("rb")
 
     def expand_spf(n: int) -> str:
         parts = []
         while n > 1:
-            p = arr[n]
+            fp.seek(n << _ITEM_SIZE_BITS)
+            bs = fp.read(ITEM_SIZE)
+            p: int = struct.unpack(PACK_FMT, bs)[0]
             cnt = 0
             while n % p == 0:
                 cnt += 1
@@ -80,16 +84,18 @@ def expand():
         return "*".join(parts)
 
     _ui("expand spf", expand_spf)
+    fp.close()
 
 
 def check():
-    bitmap = fp_bitmap.read_bytes()
+    fp = fp_bitmap.open("rb")
 
     def check_n(n: int) -> bool:
-        idx1 = n >> 3
-        idx2 = n & 7
-        bit = bitmap[idx1] & (1 << idx2)
+        fp.seek(n >> 3)
+        byte = fp.read(1)[0]
+        bit = byte & (1 << (n & 7))
         is_prime = not not bit
         return is_prime
 
     _ui("test prime", check_n)
+    fp.close()
